@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from soap_handler import process_request
+
 HOST = "localhost"
 PORT = 8000
 MAX_CONTENT_LENGTH = 1024 * 1024
@@ -70,20 +72,16 @@ class DungeonMasterHandler(BaseHTTPRequestHandler):
             return
 
         raw_body = self.rfile.read(length)
-        try:
-            xml_body = raw_body.decode("UTF-8")
-        except UnicodeDecodeError:
-            self.send_text(400, "Request must use UTF-8 encoding.")
-            return
+        status, response = process_request(raw_body)
+        self.send_xml(status, response)
 
-        print("HTTP Request Recebido")
-        print(xml_body, "\n")
-
-
-        self.send_text(
-            200,
-            f"HTTP POST received successfully! Bytes: {length}"
-        )
+    def send_xml(self, status, xml_body):
+        self.send_response(status)
+        self.send_header("Content-Type", "text/xml; charset=utf-8")
+        self.send_header("Content-Length", str(len(xml_body)))
+        self.add_cors_headers()
+        self.end_headers()
+        self.wfile.write(xml_body)
 
 def run_server():
     server = ThreadingHTTPServer((HOST, PORT), DungeonMasterHandler)
