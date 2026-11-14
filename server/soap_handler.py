@@ -30,6 +30,9 @@ def create_fault(faultcode, message):
         encoding="UTF-8",
         xml_declaration=True
     )
+# --------------
+# Rolar Dados
+# --------------
 
 def create_response_roll_dice(result: dict):
     envelope = ET.Element(qname(SOAP_NS, "Envelope"))
@@ -107,6 +110,9 @@ def process_request(received_xml):
         operation = operations[0]
         if operation.tag == qname(DM_NS, "rollDices"):
             return 200, process_roll(operation)
+    
+        if operation.tag == qname(DM_NS, "calculateTest"):
+            return 200, process_calculate_test(operation)
 
         raise SoapFault(
             "soap:Client",
@@ -124,3 +130,83 @@ def process_request(received_xml):
             error.faultcode,
             error.faultstring
         )
+    
+# -----------------
+# Calcular Teste
+# -----------------
+
+def get_integer_value(element, name):
+    value = get_value(element, name)
+    try:
+        return int(value)
+    except ValueError:
+        raise SoapFault(
+            "soap:Client",
+            f"O parâmetro {name} deve ser um número inteiro."
+        )
+
+
+def create_response_calculate_test(result):
+    envelope = ET.Element(qname(SOAP_NS, "Envelope"))
+    body = ET.SubElement(envelope, qname(SOAP_NS, "Body"))
+
+    response = ET.SubElement(
+        body,
+        qname(DM_NS, "calculateTestResponse")
+    )
+
+    fields = {
+        "attributeValue": result["attribute_value"],
+        "attributeBonus": result["attribute_bonus"],
+        "modifier": result["modifier"],
+        "difficulty": result["difficulty"],
+        "diceResult": result["dice_roll"],
+        "finalResult": result["final_result"],
+        "success": str(result["success"]).lower()
+    }
+
+    for name, value in fields.items():
+        ET.SubElement(response, qname(DM_NS, name)).text = str(value)
+
+    return ET.tostring(
+        envelope,
+        encoding="UTF-8",
+        xml_declaration=True
+    )
+
+
+def process_calculate_test(element):
+    attribute_value = get_integer_value(element, "attributeValue")
+    modifier = get_integer_value(element, "modifier")
+    difficulty = get_integer_value(element, "difficulty")
+
+    if not 1 <= attribute_value <= 20:
+        raise SoapFault(
+            "soap:Client",
+            "O valor do atributo deve estar entre 1 e 20."
+        )
+
+    if difficulty < 1:
+        raise SoapFault(
+            "soap:Client",
+            "A dificuldade deve ser maior que zero."
+        )
+
+    attribute_bonus = (attribute_value - 10) // 2
+
+    dice_roll = roll_dice("D20", 1)
+    dice_result = dice_roll["results"][0]
+
+    final_result = dice_result + attribute_bonus + modifier
+
+    result = {
+        "attribute_value": attribute_value,
+        "attribute_bonus": attribute_bonus,
+        "modifier": modifier,
+        "difficulty": difficulty,
+        "dice_roll": dice_roll,
+        "final_result": final_result,
+        "success": final_result >= difficulty
+    }
+
+    return create_response_calculate_test(result)
