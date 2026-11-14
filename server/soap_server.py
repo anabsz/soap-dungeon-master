@@ -1,10 +1,12 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-
+from pathlib import Path
 from soap_handler import process_request
 
 HOST = "localhost"
 PORT = 8000
 MAX_CONTENT_LENGTH = 1024 * 1024
+WSDL_PATH = Path(__file__).parent / "wsdl" / "dungeon_master.wsdl"
+
 
 
 class DungeonMasterHandler(BaseHTTPRequestHandler):
@@ -40,6 +42,11 @@ class DungeonMasterHandler(BaseHTTPRequestHandler):
         if self.path == "/health":
             self.send_text(200, "O servidor Dungeon Master está rodando!")
             return
+
+        if self.path == "/dungeon-master?wsdl":
+            self.send_wsdl()
+            return  
+
         self.send_text(404, "Rota não encontrada.")
 
     def do_POST(self):
@@ -82,6 +89,15 @@ class DungeonMasterHandler(BaseHTTPRequestHandler):
         self.add_cors_headers()
         self.end_headers()
         self.wfile.write(xml_body)
+
+    def send_wsdl(self):
+        try:
+            wsdl_content = WSDL_PATH.read_bytes()
+        except FileNotFoundError:
+            self.send_text(500, "Arquivo WSDL não encontrado.")
+            return
+        self.send_xml(200, wsdl_content)
+        
 
 def run_server():
     server = ThreadingHTTPServer((HOST, PORT), DungeonMasterHandler)
