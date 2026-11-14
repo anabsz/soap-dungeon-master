@@ -1,6 +1,7 @@
 from mimetypes import encodings_map
 import xml.etree.ElementTree as ET
 from services.dice import roll_dice
+from services.encounter import generate_encounter
 
 SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/"
 DM_NS = "http://dungeonmaster.local/soap"
@@ -30,6 +31,59 @@ def create_fault(faultcode, message):
         encoding="UTF-8",
         xml_declaration=True
     )
+
+def process_request(received_xml):
+    try:
+        envelope = ET.fromstring(received_xml)
+        if envelope.tag != qname(SOAP_NS, "Envelope"):
+            raise SoapFault(
+                "soap:VersionMismatch",
+                "O Envelope SOAP 1.1 é inválido."
+            )
+
+        body = envelope.find(qname(SOAP_NS, "Body"))
+        if body is None:
+            raise SoapFault(
+                "soap:Client",
+                "O elemento SOAP Body não foi encontrado."
+            )
+
+        operations = list(body)
+
+        if len(operations) != 1:
+            raise SoapFault(
+                "soap:Client",
+                "A mensagem deve conter exatamente uma operação."
+            )
+
+        operation = operations[0]
+        if operation.tag == qname(DM_NS, "rollDices"):
+            return 200, process_roll(operation)
+    
+        if operation.tag == qname(DM_NS, "calculateTest"):
+            return 200, process_calculate_test(operation)
+        
+        if operation.tag == qname(DM_NS, "generateEncounter"):
+            return 200, process_generate_encounter(operation)
+
+        raise SoapFault(
+            "soap:Client",
+            "Operação SOAP não reconhecida."
+        )
+
+    except ET.ParseError:
+        return 500, create_fault(
+            "soap:Client",
+            "O XML recebido é inválido."
+        )
+
+    except SoapFault as error:
+        return 500, create_fault(
+            error.faultcode,
+            error.faultstring
+        )
+
+
 # --------------
 # Rolar Dados
 # --------------
@@ -83,54 +137,6 @@ def process_roll(element):
     return create_response_roll_dice(result)
 
 
-def process_request(received_xml):
-    try:
-        envelope = ET.fromstring(received_xml)
-        if envelope.tag != qname(SOAP_NS, "Envelope"):
-            raise SoapFault(
-                "soap:VersionMismatch",
-                "O Envelope SOAP 1.1 é inválido."
-            )
-
-        body = envelope.find(qname(SOAP_NS, "Body"))
-        if body is None:
-            raise SoapFault(
-                "soap:Client",
-                "O elemento SOAP Body não foi encontrado."
-            )
-
-        operations = list(body)
-
-        if len(operations) != 1:
-            raise SoapFault(
-                "soap:Client",
-                "A mensagem deve conter exatamente uma operação."
-            )
-
-        operation = operations[0]
-        if operation.tag == qname(DM_NS, "rollDices"):
-            return 200, process_roll(operation)
-    
-        if operation.tag == qname(DM_NS, "calculateTest"):
-            return 200, process_calculate_test(operation)
-
-        raise SoapFault(
-            "soap:Client",
-            "Operação SOAP não reconhecida."
-        )
-
-    except ET.ParseError:
-        return 500, create_fault(
-            "soap:Client",
-            "O XML recebido é inválido."
-        )
-
-    except SoapFault as error:
-        return 500, create_fault(
-            error.faultcode,
-            error.faultstring
-        )
-    
 # -----------------
 # Calcular Teste
 # -----------------
@@ -210,3 +216,68 @@ def process_calculate_test(element):
     }
 
     return create_response_calculate_test(result)
+
+# ---------------------
+# Gerador de Encontros
+# ---------------------
+
+def create_generate_encounter_response(result):
+    envelope = ET.Element(qname(SOAP_NS, "Envelope"))
+    body = ET.SubElement(envelope, qname(SOAP_NS, "Body"))
+
+    response = ET.SubElement(
+        body,
+        qname(DM_NS, "generateEncounterResponse")
+    )
+
+    fields = {
+        "encounterName": result["name"],
+        "difficulty": result["difficulty"],
+        "groupLevel": result["group_level"],
+        "playerCount": result["player_count"]
+    }
+
+    for name, value in fields.items():
+        ET.SubElement(
+            response,
+            qname(DM_NS, name)
+        ).text = str(value)
+
+    monsters = ET.SubElement(
+        response,
+        qname(DM_NS, "monsters")
+    )
+
+    for monster in result["monsters"]:
+        monster_element = ET.SubElement(
+            monsters,
+            qname(DM_NS, "monster")
+        )
+
+        ET.SubElement(
+            monster_element,
+            qname(DM_NS, "name")
+        ).text = monster["name"]
+
+        ET.SubElement(
+            monster_element,
+            qname(DM_NS, "quantity")
+        ).text = str(monster["quantity"])
+
+    return ET.tostring(
+        envelope,
+        encoding="UTF-8",
+        xml_declaration=True
+    )
+
+
+def process_generate_encounter(element):
+    group_level = get_integer_value(element, "groupLevel")
+    player_count = get_integer_value(element, "playerCount")
+
+    try:
+        result = generate_encounter(group_level, player_count)
+    except ValueError as error:
+        raise SoapFault("soap:Client", str(error))
+
+    return create_generate_encounter_response(result)

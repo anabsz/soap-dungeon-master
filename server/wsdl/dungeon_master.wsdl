@@ -79,6 +79,41 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
+            <!-- Requisição de Gerador de Encontros -->
+            <xsd:element name="generateEncounter">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="groupLevel" type="xsd:int"/>
+                        <xsd:element name="playerCount" type="xsd:int"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="generateEncounterResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="encounterName" type="xsd:string"/>
+                        <xsd:element name="difficulty" type="xsd:string"/>
+                        <xsd:element name="groupLevel" type="xsd:int"/>
+                        <xsd:element name="playerCount" type="xsd:int"/>
+                        <xsd:element name="monsters">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="monster" minOccurs="1" maxOccurs="unbounded">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="name" type="xsd:string"/>
+                                                <xsd:element name="quantity" type="xsd:int"/>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
         </xsd:schema>
     </types>
 
@@ -102,6 +137,14 @@
     <message name="CalculateTestOutput">
         <part name="parameters" element="tns:calculateTestResponse"/>
     </message>
+
+    <message name="GenerateEncounterInput">
+        <part name="parameters" element="tns:generateEncounter"/>
+    </message>
+
+    <message name="GenerateEncounterOutput">
+        <part name="parameters" element="tns:generateEncounterResponse"/>
+    </message>
     <!-- Operações disponíveis -->
     <portType name="DungeonMasterPortType">
         <operation name="rollDices">
@@ -111,6 +154,10 @@
         <operation name="calculateTest">
             <input message="tns:CalculateTestInput"/>
             <output message="tns:CalculateTestOutput"/>
+        </operation>
+        <operation name="generateEncounter">
+            <input message="tns:GenerateEncounterInput"/>
+            <output message="tns:GenerateEncounterOutput"/>
         </operation>
     </portType>
 
@@ -139,6 +186,17 @@
         <operation name="calculateTest">
             <soap:operation
                 soapAction="http://dungeonmaster.local/soap/calculateTest"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+
+        <operation name="generateEncounter">
+            <soap:operation
+                soapAction="http://dungeonmaster.local/soap/generateEncounter"/>
             <input>
                 <soap:body use="literal"/>
             </input>
