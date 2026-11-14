@@ -55,7 +55,30 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
+            <!-- Requisição para calcular test -->
+            <xsd:element name="calculateTest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="attributeValue" type="xsd:int"/>
+                        <xsd:element name="modifier" type="xsd:int"/>
+                        <xsd:element name="difficulty" type="xsd:int"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
 
+            <xsd:element name="calculateTestResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="attributeValue" type="xsd:int"/>
+                        <xsd:element name="attributeBonus" type="xsd:int"/>
+                        <xsd:element name="modifier" type="xsd:int"/>
+                        <xsd:element name="difficulty" type="xsd:int"/>
+                        <xsd:element name="diceResult" type="xsd:int"/>
+                        <xsd:element name="finalResult" type="xsd:int"/>
+                        <xsd:element name="success" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:schema>
     </types>
 
@@ -72,11 +95,22 @@
             element="tns:rollDicesResponse"/>
     </message>
 
+    <message name="CalculateTestInput">
+        <part name="parameters" element="tns:calculateTest"/>
+    </message>
+
+    <message name="CalculateTestOutput">
+        <part name="parameters" element="tns:calculateTestResponse"/>
+    </message>
     <!-- Operações disponíveis -->
     <portType name="DungeonMasterPortType">
         <operation name="rollDices">
             <input message="tns:RollDicesInput"/>
             <output message="tns:RollDicesOutput"/>
+        </operation>
+        <operation name="calculateTest">
+            <input message="tns:CalculateTestInput"/>
+            <output message="tns:CalculateTestOutput"/>
         </operation>
     </portType>
 
@@ -97,6 +131,17 @@
                 <soap:body use="literal"/>
             </input>
 
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+
+        <operation name="calculateTest">
+            <soap:operation
+                soapAction="http://dungeonmaster.local/soap/calculateTest"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
             <output>
                 <soap:body use="literal"/>
             </output>
