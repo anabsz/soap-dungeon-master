@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://dungeonmaster.local/soap"
+    targetNamespace="http://dungeonmaster.local/soap"
+    name="DungeonMasterService">
+
+    <!-- Tipos de dados utilizados pelas operações -->
+    <types>
+        <xsd:schema
+            targetNamespace="http://dungeonmaster.local/soap"
+            elementFormDefault="qualified">
+
+            <!-- Requisição para rolar dados -->
+            <xsd:element name="rollDices">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element
+                            name="diceType"
+                            type="xsd:string"/>
+
+                        <xsd:element
+                            name="quantity"
+                            type="xsd:int"/>    
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- Resposta da rolagem -->
+            <xsd:element name="rollDicesResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element
+                            name="diceType"
+                            type="xsd:string"/>
+
+                        <xsd:element name="results">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element
+                                        name="result"
+                                        type="xsd:int"
+                                        minOccurs="1"
+                                        maxOccurs="unbounded"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+
+                        <xsd:element
+                            name="total"
+                            type="xsd:int"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </types>
+
+    <!-- Mensagens de entrada e saída -->
+    <message name="RollDicesInput">
+        <part
+            name="parameters"
+            element="tns:rollDices"/>
+    </message>
+
+    <message name="RollDicesOutput">
+        <part
+            name="parameters"
+            element="tns:rollDicesResponse"/>
+    </message>
+
+    <!-- Operações disponíveis -->
+    <portType name="DungeonMasterPortType">
+        <operation name="rollDices">
+            <input message="tns:RollDicesInput"/>
+            <output message="tns:RollDicesOutput"/>
+        </operation>
+    </portType>
+
+    <!-- Definição da comunicação SOAP -->
+    <binding
+        name="DungeonMasterSoapBinding"
+        type="tns:DungeonMasterPortType">
+
+        <soap:binding
+            style="document"
+            transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <operation name="rollDices">
+            <soap:operation
+                soapAction="http://dungeonmaster.local/soap/rollDices"/>
+
+            <input>
+                <soap:body use="literal"/>
+            </input>
+
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <!-- Endereço do serviço -->
+    <service name="DungeonMasterService">
+        <port
+            name="DungeonMasterSoapPort"
+            binding="tns:DungeonMasterSoapBinding">
+
+            <soap:address
+                location="http://localhost:8000/soap"/>
+        </port>
+    </service>
+
+</definitions>
