@@ -69,7 +69,7 @@ def process_request(received_xml):
 
         if operation.tag == qname(DM_NS, "getCreature"):
             return 200, process_get_creature(operation)
-            
+
         raise SoapFault(
             "soap:Client",
             "Operação SOAP não reconhecida."
@@ -95,7 +95,7 @@ def process_request(received_xml):
 def create_response_roll_dice(result: dict):
     envelope = ET.Element(qname(SOAP_NS, "Envelope"))
     body = ET.SubElement(envelope, qname(SOAP_NS, "Body"))
-    response = ET.SubElement(body,qname(DM_NS, "rolarDadosResponse"))
+    response = ET.SubElement(body,qname(DM_NS, "rollDicesResponse"))
 
     ET.SubElement(response,qname(DM_NS, "diceType")).text = result["dice_type"]
 
@@ -170,7 +170,7 @@ def create_response_calculate_test(result):
         "attributeBonus": result["attribute_bonus"],
         "modifier": result["modifier"],
         "difficulty": result["difficulty"],
-        "diceResult": result["dice_roll"],
+        "diceResult": result["dice_roll"]["results"][0],
         "finalResult": result["final_result"],
         "success": str(result["success"]).lower()
     }
