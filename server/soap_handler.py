@@ -1,5 +1,6 @@
 from mimetypes import encodings_map
 import xml.etree.ElementTree as ET
+from services.creature import get_creature
 from services.dice import roll_dice
 from services.encounter import generate_encounter
 
@@ -66,6 +67,9 @@ def process_request(received_xml):
         if operation.tag == qname(DM_NS, "generateEncounter"):
             return 200, process_generate_encounter(operation)
 
+        if operation.tag == qname(DM_NS, "getCreature"):
+            return 200, process_get_creature(operation)
+            
         raise SoapFault(
             "soap:Client",
             "Operação SOAP não reconhecida."
@@ -281,3 +285,55 @@ def process_generate_encounter(element):
         raise SoapFault("soap:Client", str(error))
 
     return create_generate_encounter_response(result)
+
+# --------------
+# Criaturas
+# --------------
+def create_get_creature_response(creature):
+    envelope = ET.Element(qname(SOAP_NS, "Envelope"))
+    body = ET.SubElement(envelope, qname(SOAP_NS, "Body"))
+
+    response = ET.SubElement(
+        body,
+        qname(DM_NS, "getCreatureResponse")
+    )
+
+    fields = {
+        "name": creature.name,
+        "creatureType": creature.creature_type,
+        "description": creature.description,
+        "hitPoints": creature.hit_points,
+        "armorClass": creature.armor_class,
+        "challengeRating": creature.challenge_rating
+    }
+
+    for name, value in fields.items():
+        ET.SubElement(
+            response,
+            qname(DM_NS, name)
+        ).text = str(value)
+
+    return ET.tostring(
+        envelope,
+        encoding="UTF-8",
+        xml_declaration=True
+    )
+
+def process_get_creature(element):
+    name = get_value(element, "name")
+
+    if not name or not name.strip():
+        raise SoapFault(
+            "soap:Client",
+            "O nome da criatura é obrigatório."
+        )
+
+    creature = get_creature(name)
+
+    if creature is None:
+        raise SoapFault(
+            "soap:Client",
+            "Criatura não encontrada."
+        )
+
+    return create_get_creature_response(creature)
