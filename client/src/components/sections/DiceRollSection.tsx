@@ -1,25 +1,28 @@
-import { useState, type FormEvent } from "react";
-import { useServiceCall } from "../../../hooks/useServiceCall";
-import { rollDice } from "../../../services/dungeonMasterService";
-import { parseIntInput } from "../../../utils/parseIntInput";
-import DiceTray from "../../DiceTray/DiceTray";
-import Field from "../../Field/Field";
-import SectionFrame from "../../SectionFrame/SectionFrame";
-import type { SectionProps } from "../interfaces";
-import { DICE_TYPES, MAX_QUANTITY, MIN_QUANTITY } from "./constants";
+import { useState, type SubmitEvent } from "react";
+import DiceTray from "@/components/DiceTray";
+import Field from "@/components/Field";
+import SectionFrame from "@/components/SectionFrame";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { useServiceCall } from "@/hooks/useServiceCall";
+import { parseIntInput } from "@/lib/utils";
+import { rollDice } from "@/services/soapClient";
+import type { SectionProps } from "./interfaces";
+
+const DICE_TYPES = ["D4", "D6", "D8", "D10", "D12", "D20"];
+const MAX_QUANTITY = 100;
 
 export default function DiceRollSection({ onClose }: SectionProps) {
-  const [diceType, setDiceType] = useState<string>("D20");
+  const [diceType, setDiceType] = useState("D20");
   const [quantity, setQuantity] = useState("1");
   const { result, error, loading, run } = useServiceCall(rollDice);
 
   const quantityValue = parseIntInput(quantity);
   const isValid =
-    quantityValue !== null &&
-    quantityValue >= MIN_QUANTITY &&
-    quantityValue <= MAX_QUANTITY;
+    quantityValue !== null && quantityValue >= 1 && quantityValue <= MAX_QUANTITY;
 
-  function handleSubmit(event: FormEvent) {
+  function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     if (isValid) void run(diceType, quantityValue);
   }
@@ -29,42 +32,39 @@ export default function DiceRollSection({ onClose }: SectionProps) {
       title="Rolagem de dados"
       onClose={onClose}
       error={error}
+      emptyMessage="Os dados rolados aparecem aqui."
       controls={
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <Field label="Tipo de dado" htmlFor="diceType">
-            <select
-              className="control"
+            <NativeSelect
               id="diceType"
               value={diceType}
               onChange={(event) => setDiceType(event.target.value)}
             >
               {DICE_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
+                <option key={type}>{type}</option>
               ))}
-            </select>
+            </NativeSelect>
           </Field>
 
           <Field label="Quantidade" htmlFor="quantity">
-            <input
-              className="control"
+            <Input
               id="quantity"
               type="number"
-              min={MIN_QUANTITY}
+              min={1}
               max={MAX_QUANTITY}
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
             />
           </Field>
 
-          <button type="submit" className="btn" disabled={loading || !isValid}>
+          <Button type="submit" disabled={loading || !isValid}>
             {loading ? "Rolando..." : "Rolar"}
-          </button>
+          </Button>
         </form>
       }
     >
-      <DiceTray roll={result} />
+      {result && <DiceTray roll={result} />}
     </SectionFrame>
   );
 }

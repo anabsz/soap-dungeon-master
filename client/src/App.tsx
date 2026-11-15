@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Header from "./components/Header/Header";
-import MenuGrid from "./components/MenuGrid/MenuGrid";
-import type { SectionId } from "./components/sections/interfaces";
-import { SECTIONS } from "./components/sections/sections";
+import MenuCard from "@/components/MenuCard";
+import { SECTIONS } from "@/components/sections";
+import type { SectionId } from "@/components/sections/interfaces";
+import { Card } from "@/components/ui/card";
 
 export default function App() {
   const [activeId, setActiveId] = useState<SectionId | null>(null);
@@ -10,15 +10,29 @@ export default function App() {
 
   return (
     <main className="grid min-h-screen place-items-center p-3 sm:p-6">
-      <div className="flex w-full max-w-[880px] flex-col gap-6 rounded-[14px] border border-line bg-panel p-[18px] sm:p-7">
-        <Header />
+      <Card className="w-full max-w-[880px] gap-6 rounded-[14px] p-[18px] shadow-none sm:p-7">
+        <header>
+          <h1 className="text-[22px] font-semibold tracking-wide text-primary">
+            DUNGEON MASTER
+          </h1>
+        </header>
 
         {ActiveSection ? (
           <ActiveSection onClose={() => setActiveId(null)} />
         ) : (
-          <MenuGrid sections={SECTIONS} onSelect={setActiveId} />
+          <nav className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Ferramentas">
+            {SECTIONS.map(({ id, title, description, Icon }) => (
+              <MenuCard
+                key={id}
+                title={title}
+                description={description}
+                Icon={Icon}
+                onClick={() => setActiveId(id)}
+              />
+            ))}
+          </nav>
         )}
-      </div>
+      </Card>
     </main>
   );
 }

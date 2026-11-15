@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { IconProps } from "../icons/interfaces";
+import type { LucideIcon } from "lucide-react";
 
 export type SectionId = "dice" | "skill-test" | "encounter" | "bestiary";
 
@@ -12,6 +12,6 @@ export interface SectionDefinition {
   id: SectionId;
   title: string;
   description: string;
-  Icon: ComponentType<IconProps>;
+  Icon: LucideIcon;
   Component: ComponentType<SectionProps>;
 }

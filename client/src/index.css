@@ -1,22 +1,30 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
 @theme {
-  --color-bg: #050505;
-  --color-panel: #0b0a09;
-  --color-line: #272320;
-  --color-card: #231f1b;
-  --color-card-hover: #2c2721;
-  --color-gold: #bb9550;
-  --color-gold-soft: #86693a;
-  --color-ink: #f1ece3;
-  --color-muted: #9b9288;
-  --color-ok: #35d673;
-  --color-ok-bg: #0c3a1e;
-  --color-danger: #ef6b5f;
-  --color-danger-bg: #3b1612;
-
-  --font-sans: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-
   --animate-dice-in: dice-in 0.35s ease-out backwards;
 
   @keyframes dice-in {
@@ -27,31 +35,38 @@
   }
 }
 
+/* Tema escuro único (preto + dourado) */
+:root {
+  --radius: 0.625rem;
+  --background: #050505;
+  --foreground: #f1ece3;
+  --card: #0b0a09;
+  --card-foreground: #f1ece3;
+  --primary: #5250bb;
+  --primary-foreground: #1a1408;
+  --secondary: #231f1b;
+  --secondary-foreground: #f1ece3;
+  --muted: #231f1b;
+  --muted-foreground: #9b9288;
+  --accent: #2c2721;
+  --accent-foreground: #f1ece3;
+  --destructive: #ef6b5f;
+  --success: #35d673;
+  --border: #272320;
+  --input: #272320;
+  --ring: #5f90c9;
+}
+
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
   html {
     color-scheme: dark;
   }
 
   body {
-    @apply min-h-screen min-w-80 bg-bg font-sans text-ink antialiased;
-  }
-
-  :focus-visible {
-    @apply outline-2 outline-offset-2 outline-gold;
-  }
-}
-
-/* Estilos repetidos em várias seções */
-@layer components {
-  .btn {
-    @apply cursor-pointer rounded-lg bg-gold px-4.5 py-2.5 font-semibold text-[#1a1408] transition hover:not-disabled:brightness-110 disabled:cursor-not-allowed disabled:opacity-45;
-  }
-
-  .control {
-    @apply w-full rounded-lg border border-line bg-[#171310] px-3 py-2.5 text-[15px] text-ink focus:border-gold;
-  }
-
-  .empty-state {
-    @apply grid min-h-40 place-items-center rounded-[10px] border border-dashed border-line text-sm text-muted;
+    @apply min-h-screen min-w-80 bg-background font-sans text-foreground antialiased;
   }
 }

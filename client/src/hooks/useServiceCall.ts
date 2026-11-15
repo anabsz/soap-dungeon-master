@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import type { ServiceCallState } from "./interfaces";
 
+/** Controla loading / erro / resultado de uma chamada ao serviço SOAP. */
 export function useServiceCall<A extends unknown[], R>(
   service: (...args: A) => Promise<R>
-): ServiceCallState<A, R> {
+) {
   const [result, setResult] = useState<R | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
