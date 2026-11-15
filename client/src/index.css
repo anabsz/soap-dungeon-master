@@ -1,25 +1,57 @@
-:root {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #222;
-  background: #f8f8fa;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #050505;
+  --color-panel: #0b0a09;
+  --color-line: #272320;
+  --color-card: #231f1b;
+  --color-card-hover: #2c2721;
+  --color-gold: #bb9550;
+  --color-gold-soft: #86693a;
+  --color-ink: #f1ece3;
+  --color-muted: #9b9288;
+  --color-ok: #35d673;
+  --color-ok-bg: #0c3a1e;
+  --color-danger: #ef6b5f;
+  --color-danger-bg: #3b1612;
+
+  --font-sans: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --animate-dice-in: dice-in 0.35s ease-out backwards;
+
+  @keyframes dice-in {
+    from {
+      opacity: 0;
+      transform: rotate(-120deg) scale(0.5);
+    }
+  }
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen min-w-80 bg-bg font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-gold;
+  }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
+/* Estilos repetidos em várias seções */
+@layer components {
+  .btn {
+    @apply cursor-pointer rounded-lg bg-gold px-4.5 py-2.5 font-semibold text-[#1a1408] transition hover:not-disabled:brightness-110 disabled:cursor-not-allowed disabled:opacity-45;
+  }
 
-button,
-input,
-select {
-  font: inherit;
+  .control {
+    @apply w-full rounded-lg border border-line bg-[#171310] px-3 py-2.5 text-[15px] text-ink focus:border-gold;
+  }
+
+  .empty-state {
+    @apply grid min-h-40 place-items-center rounded-[10px] border border-dashed border-line text-sm text-muted;
+  }
 }
