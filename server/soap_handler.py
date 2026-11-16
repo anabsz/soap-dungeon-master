@@ -132,9 +132,9 @@ def create_response_roll_dice(result: dict):
 
 
 def process_roll(element):
-    dice_type = get_integer_value(element, "diceType")
-    quantity_text = get_integer_value(element, "quantity")
-    
+    dice_type = get_value(element, "diceType")
+    quantity = get_integer_value(element, "quantity")
+
     try:
         result = roll_dice(dice_type, quantity)
     except ValueError as error:
