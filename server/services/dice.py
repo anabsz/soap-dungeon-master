@@ -10,20 +10,6 @@ SUPPORTED_DICES = {
 }
 
 def roll_dice(dice_type: str, quantity: int) -> dict:
-    """Função para simular rolagem de dados.
-
-    Args:
-        dice_type: Tipo do dado que será rolado. Ex: d4, d6, d20.
-        quantity: Quantidade de dados que serão rolados.
-
-    Returns:
-        Um dicionário que contém informações sobre o tipo do dado,
-        resultados individuais e resultado total.
-
-    Raises:
-        ValueError: Se o tipo de dado não estiver em SUPPORTED_DICES
-        ValueError: Quantidade de dados ser um número entre 1 e 100
-    """
     dice_type = dice_type.upper()
     if dice_type not in SUPPORTED_DICES:
         raise ValueError("Tipo de dado não suportado.")

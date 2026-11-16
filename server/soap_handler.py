@@ -88,6 +88,25 @@ def process_request(received_xml):
         )
 
 
+def get_value(element, name):
+    field = element.find(qname(DM_NS, name))
+    if field is None or field.text is None:
+        raise SoapFault(
+            "soap:Client",
+            f"Parâmetro obrigatório ausente: {name}"
+        )
+    return field.text.strip()
+
+def get_integer_value(element, name):
+    value = get_value(element, name)
+    try:
+        return int(value)
+    except ValueError:
+        raise SoapFault(
+            "soap:Client",
+            f"O parâmetro {name} deve ser um número inteiro."
+        )
+
 # --------------
 # Rolar Dados
 # --------------
@@ -112,27 +131,10 @@ def create_response_roll_dice(result: dict):
     )
 
 
-def get_value(element, name):
-    field = element.find(qname(DM_NS, name))
-    if field is None or field.text is None:
-        raise SoapFault(
-            "soap:Client",
-            f"Parâmetro obrigatório ausente: {name}"
-        )
-    return field.text.strip()
-
 def process_roll(element):
-    dice_type = get_value(element, "diceType")
-    quantity_text = get_value(element, "quantity")
-
-    try:
-        quantity = int(quantity_text)
-    except ValueError:
-        raise SoapFault(
-            "soap:Client",
-            "A quantidade deve ser um número inteiro."
-        )
-
+    dice_type = get_integer_value(element, "diceType")
+    quantity_text = get_integer_value(element, "quantity")
+    
     try:
         result = roll_dice(dice_type, quantity)
     except ValueError as error:
@@ -144,16 +146,6 @@ def process_roll(element):
 # -----------------
 # Calcular Teste
 # -----------------
-
-def get_integer_value(element, name):
-    value = get_value(element, name)
-    try:
-        return int(value)
-    except ValueError:
-        raise SoapFault(
-            "soap:Client",
-            f"O parâmetro {name} deve ser um número inteiro."
-        )
 
 
 def create_response_calculate_test(result):
